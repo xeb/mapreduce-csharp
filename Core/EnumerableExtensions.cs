@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Kockerbeck.MapReduce
 {
@@ -18,7 +19,7 @@ namespace Kockerbeck.MapReduce
         /// <param name="list"></param>
         /// <param name="keySelector"></param>
         /// <param name="valueSelector"></param>
-        public static void Add<T, TK, TV>(this Dictionary<TK, List<TV>> dictionary, IEnumerable<T> list, Func<T, TK> keySelector, Func<T, TV> valueSelector)
+        public static void Add<T, TK, TV>(this IDictionary<TK, List<TV>> dictionary, IEnumerable<T> list, Func<T, TK> keySelector, Func<T, TV> valueSelector)
         {
             foreach (var item in list)
             {
@@ -53,7 +54,63 @@ namespace Kockerbeck.MapReduce
                 action(item);
             }
         }
+        
+        /// <summary>
+        /// Divides an enumerable into equal parts and performs an action on those parts
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enumerable"></param>
+        /// <param name="parts"></param>
+        /// <param name="action"></param>
+        public static void DivvyUp<T>(this IEnumerable<T> enumerable, int parts, Action<IEnumerable<T>, int, int> action)
+        {
+            if (enumerable == null)
+            {
+                throw new ArgumentNullException("enumerable");
+            }
 
+            if (action == null)
+            {
+                throw new ArgumentNullException("action");
+            }
+
+            var actions = new List<Action>();
+
+            if (parts == 0)
+                parts = 1;
+
+            int count = enumerable.Count();
+            int itemsPerPart = count / parts;
+
+            if (itemsPerPart == 0)
+                itemsPerPart = 1;
+
+            for (int i = 0; i < parts; i++)
+            {
+                var collection = enumerable
+                    .Skip(i * itemsPerPart)
+                    .Take(i == parts - 1 ? count : itemsPerPart);
+
+                int j = i; // access to modified closure safety
+                actions.Add(() => action(collection, j, itemsPerPart));
+            }
+
+            Parallel.Invoke(actions.ToArray());
+        }
+
+        /// <summary>
+        /// Divides an enumerable into equal parts and performs an action on those parts
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enumerable"></param>
+        /// <param name="parts"></param>
+        /// <param name="action"></param>
+        public static void DivvyUp<T>(this IEnumerable<T> enumerable, int parts, Action<IEnumerable<T>> action)
+        {
+            DivvyUp(enumerable, parts, (subset, i, j) => action(subset));
+        }
+        
         #endregion
+        
     }
 }

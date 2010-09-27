@@ -52,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EnumerableExtensionTests.cs" />
     <Compile Include="FileCharacterTests.cs" />
     <Compile Include="FileWordTests.cs" />
     <Compile Include="MemoryTests.cs" />

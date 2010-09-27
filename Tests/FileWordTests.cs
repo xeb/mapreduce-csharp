@@ -11,8 +11,8 @@ namespace Kockerbeck.MapReduce.Tests
     public class FileWordTests
     {
         [Theory,
-        InlineData("Lorem", 3),
         InlineData("et", 77),
+        InlineData("Lorem", 3),
         InlineData("Cicero", 1),]
         public void MapReduce_Finds_Keywords_In_Flat_Files(string word, int times)
         {
@@ -24,7 +24,7 @@ namespace Kockerbeck.MapReduce.Tests
             di.GetFiles().ToList().ForEach(f => fileSearchData.Add(f, File.ReadAllText(f.FullName)));
 
             var output = MapReduce.Execute(Map, Reduce, fileSearchData);
-
+            
             Assert.NotEmpty(output);
             Assert.Contains(word, output.Keys);
             Assert.Equal(times, output[word][0]);
