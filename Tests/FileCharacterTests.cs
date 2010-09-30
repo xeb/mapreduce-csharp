@@ -19,7 +19,7 @@ namespace Kockerbeck.MapReduce.Tests
             // ReSharper restore AssignNullToNotNullAttribute
 
             var fileSearchData = new Dictionary<FileInfo, string>();
-            di.GetFiles().ToList().ForEach(f => fileSearchData.Add(f, File.ReadAllText(f.FullName)));
+            di.GetFiles("*.txt").ToList().ForEach(f => fileSearchData.Add(f, File.ReadAllText(f.FullName)));
 
             _output = MapReduce.Execute(Map, Reduce, fileSearchData);
         }

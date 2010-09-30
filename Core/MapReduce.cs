@@ -21,18 +21,13 @@ namespace Kockerbeck.MapReduce
             var result = new Dictionary<T3, List<T4>>();
             var maps = new Dictionary<T3, List<T4>>();
 
-            input.DivvyUp(NumberOfCores, l => l.ForEach(kv => InvokeWithLock(maps, () => maps.Add(mapFunction(kv.Key, kv.Value), i => i.Key, i => i.Value))));
-            maps.DivvyUp(NumberOfCores, m => m.ForEach(map => InvokeWithLock(result, () => result.Add(reduceFunction(map.Key, map.Value), i => map.Key, i => i))));
+            input.DivvyUp(NumberOfCores, l => l.ForEach(kv => 
+                maps.Add(mapFunction(kv.Key, kv.Value), i => i.Key, i => i.Value)));
+
+            maps.DivvyUp(NumberOfCores, m => m.ForEach(map => 
+                result.Add(reduceFunction(map.Key, map.Value), i => map.Key, i => i)));
 
             return result;
-        }
-
-        private static void InvokeWithLock(object objectLock, Action action)
-        {
-            lock (objectLock)
-            {
-                action();
-            }
         }
     }
 }

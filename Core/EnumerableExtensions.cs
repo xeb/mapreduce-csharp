@@ -21,21 +21,24 @@ namespace Kockerbeck.MapReduce
         /// <param name="valueSelector"></param>
         public static void Add<T, TK, TV>(this IDictionary<TK, List<TV>> dictionary, IEnumerable<T> list, Func<T, TK> keySelector, Func<T, TV> valueSelector)
         {
-            foreach (var item in list)
+            lock (dictionary)
             {
-                var key = keySelector(item);
-
-                if (!dictionary.ContainsKey(key))
+                foreach (var item in list)
                 {
-                    dictionary[key] = new List<TV>();
-                }
+                    var key = keySelector(item);
 
-                dictionary[key].Add(valueSelector(item));
+                    if (!dictionary.ContainsKey(key))
+                    {
+                        dictionary[key] = new List<TV>();
+                    }
+
+                    dictionary[key].Add(valueSelector(item));
+                }
             }
         }
 
         #endregion
-        
+
         #region -- IEnumberable --
 
         /// <summary>
@@ -49,12 +52,12 @@ namespace Kockerbeck.MapReduce
         /// <param name="action"></param>
         public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
         {
-            foreach(var item in enumerable)
+            foreach (var item in enumerable)
             {
                 action(item);
             }
         }
-        
+
         /// <summary>
         /// Divides an enumerable into equal parts and performs an action on those parts
         /// </summary>
@@ -109,8 +112,7 @@ namespace Kockerbeck.MapReduce
         {
             DivvyUp(enumerable, parts, (subset, i, j) => action(subset));
         }
-        
+
         #endregion
-        
     }
 }
